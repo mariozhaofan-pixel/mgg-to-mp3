@@ -1,0 +1,3 @@
+# Windows build dependency. Runtime GUI uses the Python standard library.
+# Pillow is optional and needed only to regenerate icon.ico with build_icon.py.
+pyinstaller==6.22.3

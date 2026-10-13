@@ -1,0 +1,48 @@
+# Python caches and local environments
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Build tools and generated packages
+.packaging/
+.build/
+build/
+dist/
+发布/
+*.spec
+*.exe
+*.zip
+*.7z
+
+# Audio inputs and generated media
+*.mgg*
+*.mflac*
+*.qmc*
+*.ogg
+*.flac
+*.opus
+*.wav
+*.m4a
+*.mp3
+*.aac
+*.wma
+MP3输出/
+
+# Local verification fixtures, reports and logs
+.verification*/
+reports/
+verification/
+verification-output/
+test-output/
+*report*.json
+*report*.txt
+*report*.md
+*.log
+
+# Local machine configuration
+.env
+.env.*
+.DS_Store
+Thumbs.db
+desktop.ini
