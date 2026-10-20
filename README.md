@@ -1,98 +1,61 @@
-# MGG 批量转 MP3
+# 音乐批量转 MP3
 
-一个 Windows 本地批量转换工具。双击 EXE，添加音乐文件或文件夹，即可把支持的 MGG / QMC2 文件及普通音频转换为 MP3。
+版本 **2.0.0**。Windows 中文图形界面工具，将 NCM、MGG / MFLAC 和普通音频放进同一个列表，自动识别并统一转为 MP3。支持批量文件、递归文件夹、失败继续、取消任务和同名保护。
 
-**[下载最新 Windows 版本](https://github.com/mariozhaofan-pixel/mgg-to-mp3/releases/latest)** · 当前版本：`1.0.0`
+**[下载最新 Windows 版本](https://github.com/mariozhaofan-pixel/mgg-to-mp3/releases/latest)**。仓库沿用 `mgg-to-mp3` 名称，v2.0.0 起为包含 NCM 与普通音频的统一工具。
 
-## 使用方法
+## 直接使用
 
-1. 从 Releases 下载 `MGG-to-MP3.exe`，保存后双击运行。无需安装 Python 或另外配置 FFmpeg。
-2. 点击「添加文件」批量选择音乐，或点击「添加文件夹」递归读取子文件夹。
-3. 选择输出目录和码率，然后点击「开始转换」。默认输出到首个输入文件所在目录或首个输入文件夹下的 `MP3输出` 文件夹。
-4. 转换结束后点击「打开输出」。选中失败的文件可查看具体原因。
+1. 下载并双击 `Music-to-MP3.exe`（本地构建名称为 `音乐批量转MP3.exe`），无需安装 Python、FFmpeg 或音乐客户端。
+2. 点击「添加文件」选择多个音频文件，或点击「添加文件夹」。不同格式可以混合添加，也可以将文件拖到 EXE 图标上启动。
+3. 选择输出目录和 192 / 256 / 320 kbps 码率，点击「开始转换」。
+4. 完成后点击「打开输出」。失败或有提示时，选中该行查看详情。
 
-文件也可以拖到 EXE 图标上，作为启动参数导入。程序窗口内使用添加按钮导入文件。
+默认输出到首个输入文件所在目录或首个输入文件夹下的 `MP3输出`。源文件保持不变，已有同名 MP3 会自动避让。每个结果均通过完整音频解码检查后才保存。递归导入时会排除当前输出目录及其子目录，避免重复转换。
 
-## 功能
+## 支持范围
 
-- 支持批量添加、递归读取文件夹、去重、移除所选和清空列表。
-- 可转换自带内嵌密钥的 MGG / MFLAC / QMC2 文件，以及有效的普通 OGG、FLAC、Opus、WAV、M4A、MP3 文件。
-- 提供 `320 / 256 / 192 kbps` 三档 MP3 码率，默认 `320 kbps`。
-- 逐项显示处理结果；一个文件失败后继续处理其他文件。
-- 保留源文件；输出重名时自动另存，不覆盖已有文件。
-- 可取消任务；已完成的输出会保留，未完成的临时输出会清理。
-- 转码后进行完整解码验证，通过后才保存结果。
-- 全程本地处理，不上传音频，不读取账号登录凭据。
+| 输入类型 | 处理方式 |
+| --- | --- |
+| NCM | 解包标准 NCM，将音频转为 MP3，并保留可读取的歌曲名、歌手、专辑和内嵌封面 |
+| MGG / MFLAC | 继承原 MGG 工具的 QMC2 内嵌密钥解码，解码后转为 MP3 |
+| 普通音频 | 支持 WAV、OGG、FLAC、Opus、M4A、MP3、AAC、WMA、AIF、AIFF、APE，由 FFmpeg 读取并转码 |
 
-添加文件夹时会排除当前配置的输出目录及其子目录，避免重复处理已经生成的 MP3。
+**需要外部 `musicex` 密钥的新版 MGG 不支持。** 不同 MGG 文件可能采用不同结构，本工具仅支持能够从文件内解析密钥的版本。普通音频也必须具有完整、有效且可解码的内容；扩展名正确不等于文件有效。
 
-## 支持范围与常见失败
+NCM 中损坏或无法读取的元数据、封面会跳过并显示提示，不联网获取封面。全部处理在本地进行，不上传音频，不读取账号登录凭据。音质取决于源文件，较高码率不能恢复已经损失的细节。
 
-**MGG 是扩展名，不代表所有文件采用相同的加密结构。** 本工具处理带可解析内嵌密钥的 QMC2 文件，包括支持的 V1 和 QTag 尾部结构。
+## 常见问题
 
-- **不支持需要外部密钥的 `musicex` 新格式。** 遇到这类文件会明确提示，不能仅通过改扩展名解决。
-- 普通 `.ogg` 必须确实包含有效音频。其他工具解密错误后生成的 `.ogg`，即使扩展名正确，也无法正常转成 MP3。
-- 文件损坏、下载不完整或使用不支持的密钥结构时，会显示失败原因。建议使用原始下载文件重试。
-- MP3 是有损格式。选择更高码率不会恢复原始音频中已经缺失的细节。
+- NCM 是封装，内含 MP3 或 FLAC 等编码；MGG / MFLAC 也可能封装加密音频。本工具会解码后继续转码，最终统一生成 MP3。
+- 请使用完整的原始文件；仅修改文件扩展名没有作用。其他工具解密失败后生成的伪 OGG 文件不能直接转码，应添加原始 MGG 重试。
+- 损坏、不完整或尚未支持的文件会报错，其余文件继续处理。标记「成功（提示）」的文件已经生成 MP3，选中后可查看附加说明。
+- 首次启动略慢属于单文件 EXE 解压内置组件的过程。
+- 右上角「关于」可查看版本和第三方许可证；许可证目录在工具运行期间可打开。
 
-本项目不提供音乐文件。
+## 源码运行和构建
 
-## 从源码运行
-
-使用 Windows x64、Python 3.12（含 Tkinter）和支持 `libmp3lame` 的 FFmpeg。图形界面只使用 Python 标准库；运行源码不需要 PyInstaller。
-
-确认 Python 的 Tkinter 可用：
+使用 Windows x64、Python 3.12（含 Tkinter）和支持 `libmp3lame` 的 FFmpeg。运行依赖与构建依赖保持在 `requirements.txt` 和 `requirements-build.txt` 中，构建使用 PyInstaller 6.22.3：
 
 ```powershell
-python -m tkinter
+python -m pip install -r requirements-build.txt
+$env:AUDIO_FFMPEG = 'C:\Tools\ffmpeg\bin\ffmpeg.exe'
+python launcher.py
+.\build.ps1 -FFmpegExe $env:AUDIO_FFMPEG
 ```
 
-在仓库目录中运行：
+如果 `ffmpeg.exe` 已在 `PATH` 中，可省略 `AUDIO_FFMPEG` 环境变量，并直接运行 `.\build.ps1`。打包后的 EXE 使用内置 FFmpeg，不需要设置环境变量。
+
+构建输出为项目上一级 `发布` 文件夹中的 `音乐批量转MP3.exe`。预生成图标已包含；仅重新生成图标需要 Pillow。
+
+离线验收会生成自己的音频与 NCM 测试夹具，不包含真实歌曲：
 
 ```powershell
-$env:MGG_FFMPEG = 'C:\Tools\ffmpeg\bin\ffmpeg.exe'
-python .\launcher.py
+python launcher.py --self-test .verification-source
 ```
 
-如果 `ffmpeg.exe` 已在 `PATH` 中，可省略环境变量。`MGG_FFMPEG` 仅用于源码运行；打包后的 EXE 使用随附组件。
+## 许可与来源
 
-## 构建单文件 EXE
+本项目原创应用代码采用 MIT 授权。NCM 格式参考 MIT 项目 [taurusxin/ncmdump](https://github.com/taurusxin/ncmdump) 和 [ww-rm/ncmdump-py](https://github.com/ww-rm/ncmdump-py)。MGG / QMC2 算法代码来自 MIT 项目 [QM Unlock](https://github.com/mary20050520/qmunlock)，保留原作者许可证。本项目不是音乐平台的官方工具。
 
-构建环境同上，并需要 PowerShell 和 **PyInstaller 6.22.3**。仓库已包含预生成的 `icon.ico`，正常构建不需要 Pillow。
-
-在仓库目录中安装构建依赖：
-
-```powershell
-python -m pip install --target .packaging -r .\requirements-build.txt
-```
-
-然后运行构建脚本，指定 FFmpeg：
-
-```powershell
-.\build.ps1 -PythonExe 'python' -FFmpegExe 'C:\Tools\ffmpeg\bin\ffmpeg.exe'
-```
-
-如果 `ffmpeg.exe` 已在 `PATH` 中：
-
-```powershell
-.\build.ps1
-```
-
-`build.ps1` 会读取仓库下的 `.packaging` 依赖目录，将 FFmpeg、许可证和图标一起打包。生成文件为仓库**上一级** `发布` 目录中的 `MGG批量转MP3.exe`；构建缓存位于仓库内的 `.build` 目录。
-
-如果自行更换 FFmpeg 版本或构建来源，请同步更新 `THIRD_PARTY.txt` 和 `licenses/` 中的版本、构建来源及对应许可证信息。
-
-仅在需要重新生成图标时安装 Pillow 并运行：
-
-```powershell
-python -m pip install Pillow
-python .\build_icon.py
-```
-
-## 许可证与第三方组件
-
-本项目新增的应用代码采用 [MIT 许可证](LICENSE)，版权所有 © 2026 mariozhaofan-pixel。
-
-QMC2 算法代码来自 [QM Unlock](https://github.com/mary20050520/qmunlock)，其原始 MIT 许可证保存在 [licenses/QMunlock-MIT.txt](licenses/QMunlock-MIT.txt)。
-
-发布的 EXE 包含或随附 FFmpeg、Python、Tcl/Tk、PyInstaller 引导程序等第三方组件，分别受各自许可证约束。当前发布所用 FFmpeg 为 GPL v3 构建。依赖说明见 [THIRD_PARTY.txt](THIRD_PARTY.txt)、[来源与构建记录](SOURCES.md) 和 [licenses](licenses/)。
+FFmpeg、Python、Tcl/Tk、PyCryptodome 和 PyInstaller 使用各自的许可证，详见 `THIRD_PARTY.txt`、`SOURCES.md` 和 `licenses/`。整个 EXE 及所有依赖不能统称为 MIT 授权。本项目不附带音乐文件。

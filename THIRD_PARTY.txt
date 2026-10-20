@@ -1,23 +1,27 @@
-MGG Batch Converter 1.0.0
+Audio Batch Converter 2.0.0
 
-QMC2 algorithm: QM Unlock contributors, MIT license.
-Source: https://github.com/mary20050520/qmunlock/blob/master/qmunlock/qmc2.py
-License: licenses/QMunlock-MIT.txt
+NCM format and decoding references:
+https://github.com/taurusxin/ncmdump (MIT)
+https://github.com/ww-rm/ncmdump-py (MIT)
+See licenses/ncmdump-MIT.txt and licenses/ncmdump-py-MIT.txt.
+
+AES implementation: PyCryptodome 3.23.0
+Source: https://github.com/Legrandin/pycryptodome/tree/v3.23.0
+License: licenses/PyCryptodome-LICENSE.txt
 
 FFmpeg 9.0.1 full static Windows x64 build by gyan.dev, GPL v3.
-Build and source information: licenses/FFmpeg-build.txt
-License: licenses/FFmpeg-GPLv3.txt
-Source revision: https://github.com/FFmpeg/FFmpeg/commit/bf1b838f2a
-Build source: https://www.gyan.dev/ffmpeg/builds/
-FFmpeg is invoked as a separate executable. No audio is uploaded.
+Invoked as a separate executable. See licenses/FFmpeg-build.txt,
+licenses/FFmpeg-GPLv3.txt and SOURCES.md for source/build information.
 
-Python 3.12 runtime: Python Software Foundation License.
-License: licenses/Python-LICENSE.txt
-Tk/Tcl runtime licenses: licenses/Tk-license.txt and licenses/Tcl-license.txt
+Python 3.12.10, Python Software Foundation License.
+See licenses/Python-LICENSE.txt.
+Tcl/Tk runtime: licenses/Tcl-license.txt and licenses/Tk-license.txt.
 
-PyInstaller bootloader: GPL with an exception permitting distribution of
-bundled applications under their own license.
+PyInstaller 6.22.3 bootloader: GPL with distribution exception.
 https://pyinstaller.org/en/stable/license.html
 
-This tool supports QMC2 files with embedded keys, and ordinary audio files.
-Files needing an external musicex key are reported as unsupported.
+All audio processing is local. Embedded cover art is used without downloads.
+
+QMC2 implementation: QM Unlock contributors (MIT).
+https://github.com/mary20050520/qmunlock/blob/master/qmunlock/qmc2.py
+See licenses/QMunlock-MIT.txt.

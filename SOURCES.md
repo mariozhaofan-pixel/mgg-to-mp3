@@ -1,24 +1,26 @@
-# 第三方来源与发布构建
+# 来源与构建记录
 
-本项目的转换流程在本机执行。以下记录 v1.0.0 使用的上游代码和构建组件；各组件保留自己的许可证。
+本工具版本 2.0.0，适用于 Windows x64。应用代码基于已有本地批量音频转换界面改写；NCM 流式解包代码参考以下公开格式实现：
 
-| 组件 | 版本或标识 | 上游 |
-| --- | --- | --- |
-| QMC2 解码核心 | `qmc2_core.py`，SHA-256 `8da32a863d6c3b2fc23bac42eb3eafa15159c0c678c1b14ccfed63bb427eed78` | [QM Unlock](https://github.com/mary20050520/qmunlock)，MIT |
-| FFmpeg | `9.0.1-full_build-www.gyan.dev` | [Gyan 发布页](https://github.com/GyanD/codexffmpeg/releases/tag/9.0.1)，GPL v3 |
-| FFmpeg 主体源码 | `bf1b838f2a` | [FFmpeg 源码版本](https://github.com/FFmpeg/FFmpeg/commit/bf1b838f2a) |
-| Python | 3.12.14 | [CPython](https://github.com/python/cpython/tree/v3.12.14) |
-| Tcl / Tk | 8.6.12 | [Tcl](https://github.com/tcltk/tcl/tree/core-8-6-12)、[Tk](https://github.com/tcltk/tk/tree/core-8-6-12) |
-| PyInstaller | 6.22.3 | [PyInstaller](https://github.com/pyinstaller/pyinstaller/tree/v6.22.3)，引导程序带分发例外 |
+- [taurusxin/ncmdump](https://github.com/taurusxin/ncmdump)，重点参考 `src/ncmcrypt.cpp` 中密钥、元数据、封面容量和音频起点的处理。
+- [ww-rm/ncmdump-py](https://github.com/ww-rm/ncmdump-py)，重点参考 `ncmdump/crypto.py` 的 AES 常量及 256 字节音频掩码。
 
-QMC2 核心原始文件：[qmunlock/qmc2.py](https://github.com/mary20050520/qmunlock/blob/master/qmunlock/qmc2.py)。固定算法常量属于该解码实现，不是登录凭据。
+上述参考为开源逆向实现，不是音乐平台发布的官方文件规范。对应 MIT 许可原文位于 `licenses/`。
 
-FFmpeg 通过独立子进程调用；发布 EXE 包含该程序。其原始构建信息及依赖版本清单见 [licenses/FFmpeg-build.txt](licenses/FFmpeg-build.txt)，许可证见 [licenses/FFmpeg-GPLv3.txt](licenses/FFmpeg-GPLv3.txt)。该 `ffmpeg.exe` 的 SHA-256 为：
+构建组件：Python 3.12.10、Tcl/Tk 8.6.15、PyCryptodome 3.23.0、PyInstaller 6.22.3。
 
-```text
-57c56e369d5b4873b4d93fc1a1d833cb7cd8bc9325c14b05c34ce60b22842d8a
-```
+- [Python 3.12.10](https://github.com/python/cpython/tree/v3.12.10)
+- [PyCryptodome 3.23.0](https://github.com/Legrandin/pycryptodome/tree/v3.23.0)
+- [PyInstaller 6.22.3](https://github.com/pyinstaller/pyinstaller/tree/v6.22.3)
+- [Tcl](https://github.com/tcltk/tcl) / [Tk](https://github.com/tcltk/tk)
 
-上述 FFmpeg 主体链接不包含 full 静态构建的全部外部库。Gyan 发布页的自动 “Source code” 下载是其支持仓库；本页不将它表述为完整的 FFmpeg 对应源码包。[Gyan 的构建工具仓库](https://github.com/GyanD/media-autobuild_suite) 可供参考，但尚未核实为此二进制的精确构建脚本。
+打包包含通过独立进程调用的 `FFmpeg 9.0.1-full_build-www.gyan.dev`（GPL v3）。
 
-若替换 FFmpeg，自行构建者需同步核对版本、构建信息、依赖来源和许可证。仓库 `LICENSE` 中的 MIT 授权不改变第三方组件的授权条款。
+- [Gyan 原始发布](https://github.com/GyanD/codexffmpeg/releases/tag/9.0.1)
+- [FFmpeg 主体源码版本 bf1b838f2a](https://github.com/FFmpeg/FFmpeg/commit/bf1b838f2a)
+- 构建参数和外部库版本见 `licenses/FFmpeg-build.txt`。
+- ffmpeg.exe SHA-256：`57c56e369d5b4873b4d93fc1a1d833cb7cd8bc9325c14b05c34ce60b22842d8a`。
+
+FFmpeg 主体源码不包含 full 构建的全部外部库；Gyan 发布页自动生成的 Source code 是支持仓库，不应当作完整的 FFmpeg 对应源码包。更换组件时需同步更新对应来源及许可证。
+
+QMC2 核心沿用已验证的 MGG 工具，来自 [QM Unlock](https://github.com/mary20050520/qmunlock/blob/master/qmunlock/qmc2.py)，MIT 许可证见 `licenses/QMunlock-MIT.txt`。

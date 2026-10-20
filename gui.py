@@ -12,7 +12,8 @@ from tkinter import filedialog, messagebox, ttk
 from converter import ConversionCancelled, SUPPORTED_EXTENSIONS, convert_file, resource_path
 
 
-APP_NAME = "MGG 批量转 MP3"
+APP_NAME = "音乐批量转 MP3"
+APP_VERSION = "2.0.0"
 BG = "#f4f7fa"
 FG = "#172d40"
 MUTED = "#617486"
@@ -43,6 +44,7 @@ class Application:
         self.status = tk.StringVar(value="准备就绪")
         self.progress_label = tk.StringVar(value="0 / 0")
         self.current_iid: str | None = None
+        self.about_window: tk.Toplevel | None = None
         self.closing_when_idle = False
         self._set_style()
         self._build_ui()
@@ -74,11 +76,16 @@ class Application:
         page.columnconfigure(0, weight=1)
         page.rowconfigure(4, weight=1)
 
-        ttk.Label(page, text=APP_NAME, style="Title.TLabel").grid(row=0, column=0, sticky="w")
+        heading = ttk.Frame(page)
+        heading.grid(row=0, column=0, sticky="ew")
+        ttk.Label(heading, text=APP_NAME, style="Title.TLabel").pack(side="left")
+        ttk.Button(heading, text="关于", command=self._show_about).pack(side="right")
         ttk.Label(page, text="添加音乐 → 选择输出目录 → 开始转换", style="Subtitle.TLabel").grid(
             row=1, column=0, sticky="w", pady=(5, 3))
-        ttk.Label(page, text="支持自带密钥的 MGG / MFLAC 和普通 OGG / FLAC；需要外部密钥的文件会说明原因。",
-                  style="Hint.TLabel").grid(row=2, column=0, sticky="w", pady=(0, 13))
+        self.support_label = ttk.Label(
+            page, text="NCM / MGG / MFLAC 与 WAV、OGG、FLAC、Opus、M4A、MP3、AAC、WMA、AIF、AIFF、APE 可混合添加，自动识别后转为 MP3。",
+            style="Hint.TLabel", wraplength=980)
+        self.support_label.grid(row=2, column=0, sticky="ew", pady=(0, 13))
 
         toolbar = ttk.Frame(page)
         toolbar.grid(row=3, column=0, sticky="ew", pady=(0, 10))
@@ -104,6 +111,7 @@ class Application:
         self.tree.column("status", width=110, minwidth=85, stretch=False, anchor="center")
         self.tree.column("output", width=370, minwidth=230, stretch=True)
         self.tree.tag_configure("success", foreground="#16734c")
+        self.tree.tag_configure("warning", foreground="#946400")
         self.tree.tag_configure("error", foreground="#bc3838")
         self.tree.tag_configure("working", foreground=BLUE)
         self.tree.tag_configure("waiting", foreground=MUTED)
@@ -117,11 +125,16 @@ class Application:
         details = ttk.Frame(page)
         details.grid(row=5, column=0, sticky="ew", pady=(8, 13))
         ttk.Label(details, text="文件详情", style="Hint.TLabel").pack(anchor="w")
-        self.details_text = tk.Text(details, height=3, wrap="word", borderwidth=0, highlightthickness=1,
+        details_body = ttk.Frame(details)
+        details_body.pack(fill="x", pady=(4, 0))
+        self.details_text = tk.Text(details_body, height=4, wrap="word", borderwidth=0, highlightthickness=1,
                                     highlightbackground="#dbe3eb", background="#ffffff", foreground=MUTED,
                                     padx=9, pady=7, font=("Microsoft YaHei UI", 9))
-        self.details_text.pack(fill="x", pady=(4, 0))
-        self._set_details("选中文件可查看完整路径、转换结果或失败原因。")
+        details_scroll = ttk.Scrollbar(details_body, orient="vertical", command=self.details_text.yview)
+        details_scroll.pack(side="right", fill="y")
+        self.details_text.configure(yscrollcommand=details_scroll.set)
+        self.details_text.pack(side="left", fill="x", expand=True)
+        self._set_details("选中文件可查看完整路径、转换提示或失败原因。")
 
         output = ttk.Frame(page)
         output.grid(row=6, column=0, sticky="ew")
@@ -155,7 +168,52 @@ class Application:
         self.start_button = ttk.Button(controls, text="开始转换", style="Accent.TButton", command=self._start)
         self.start_button.grid(row=0, column=3)
         self.status_label = ttk.Label(page, textvariable=self.status, style="Hint.TLabel", wraplength=980)
-        self.status_label.grid(row=9, column=0, sticky="w", pady=(10, 0))
+        self.status_label.grid(row=9, column=0, sticky="ew", pady=(10, 0))
+        page.bind("<Configure>", self._resize_labels)
+
+    def _resize_labels(self, event) -> None:
+        width = max(300, event.width - 48)
+        for label in (self.support_label, self.status_label):
+            if int(label.cget("wraplength")) != width:
+                label.configure(wraplength=width)
+
+    def _show_about(self) -> None:
+        if self.about_window is not None and self.about_window.winfo_exists():
+            self.about_window.lift()
+            self.about_window.focus_set()
+            return
+        window = tk.Toplevel(self.root)
+        self.about_window = window
+        window.title(f"关于 {APP_NAME}")
+        window.transient(self.root)
+        window.resizable(False, False)
+        window.configure(background=BG)
+        if resource_path("icon.ico").is_file():
+            window.iconbitmap(str(resource_path("icon.ico")))
+        body = ttk.Frame(window, padding=24)
+        body.pack(fill="both", expand=True)
+        ttk.Label(body, text=APP_NAME, font=("Microsoft YaHei UI", 17, "bold")).pack(anchor="w")
+        ttk.Label(body, text=f"版本 {APP_VERSION}", style="Subtitle.TLabel").pack(anchor="w", pady=(5, 14))
+        ttk.Label(body, text="NCM、MGG 和普通音频可混合批量转换。\n解码与 MP3 转换全部在本地完成，不上传音频。\n不读取账号登录凭据，源文件保留，同名自动另存。\nNCM 可保留可读取的元数据与内嵌封面。\nMGG 支持内嵌密钥版本；需要外部 musicex 密钥的文件暂不支持。",
+                  wraplength=470, justify="left").pack(anchor="w")
+        ttk.Label(body, text="程序包含第三方组件，各组件受各自许可证约束。\n运行期间可打开随工具附带的许可证目录查看详情。",
+                  wraplength=470, justify="left", style="Hint.TLabel").pack(anchor="w", pady=(16, 18))
+        actions = ttk.Frame(body)
+        actions.pack(fill="x")
+        ttk.Button(actions, text="查看第三方许可证", command=self._open_licenses).pack(side="left")
+        ttk.Button(actions, text="关闭", command=window.destroy).pack(side="right", padx=(24, 0))
+        window.bind("<Escape>", lambda _event: window.destroy())
+
+    def _open_licenses(self) -> None:
+        directory = resource_path("licenses")
+        parent = self.about_window if self.about_window is not None and self.about_window.winfo_exists() else self.root
+        if not directory.is_dir():
+            messagebox.showinfo("第三方许可证", "当前运行目录中没有许可证文件夹。请使用附带 licenses 目录的完整发布版本。", parent=parent)
+            return
+        try:
+            os.startfile(str(directory))
+        except OSError as error:
+            messagebox.showerror("无法打开许可证目录", str(error), parent=parent)
 
     def _set_details(self, text: str) -> None:
         self.details_text.configure(state="normal")
@@ -166,7 +224,7 @@ class Application:
     def _show_selected_details(self, _event=None) -> None:
         selection = self.tree.selection()
         if not selection:
-            self._set_details("选中文件可查看完整路径、转换结果或失败原因。")
+            self._set_details("选中文件可查看完整路径、转换提示或失败原因。")
             return
         item = self.items.get(selection[0])
         if item is None:
@@ -362,7 +420,14 @@ class Application:
                 else:
                     success += 1
                     output = str(result.get("output", ""))
-                    self.events.put(("item", iid, "成功", output, "转换完成，源文件已保留。", "success"))
+                    warnings = result.get("warnings") or []
+                    if isinstance(warnings, str):
+                        warnings = [warnings]
+                    warnings = [str(warning).strip() for warning in warnings if str(warning).strip()]
+                    detail = "转换完成，源文件已保留。"
+                    if warnings:
+                        detail += "\n" + "\n".join(f"提示：{warning}" for warning in warnings)
+                    self.events.put(("item", iid, "成功", output, detail, "warning" if warnings else "success"))
                 completed += 1
                 self.events.put(("progress", completed, len(jobs)))
         except Exception as error:
@@ -381,8 +446,9 @@ class Application:
         item = self.items.get(iid)
         if item is None:
             return
-        item.update(status=status, output=output, message=message)
-        self.tree.item(iid, values=(item["path"].name, status, Path(output).name if output else ""), tags=(tag,))
+        item.update(status=status, output=output, message=message, has_warnings=tag == "warning")
+        display_status = "成功（提示）" if status == "成功" and tag == "warning" else status
+        self.tree.item(iid, values=(item["path"].name, display_status, Path(output).name if output else ""), tags=(tag,))
         if iid in self.tree.selection():
             self._show_selected_details()
         self._update_summary()
@@ -447,18 +513,23 @@ class Application:
                     self.progress_label.set(f"{completed} / {total}")
                 elif kind == "batch_done":
                     success, failures, cancelled, fatal_error = payload
+                    warning_iids = [iid for iid, item in self.items.items() if item.get("has_warnings")]
                     self.mode = "idle"
                     self.worker = None
                     self.current_iid = None
                     self.status.set(("已取消" if cancelled else "转换结束") +
                                     f"：本次成功 {success} 个，失败 {failures} 个。" +
-                                    ("选中失败文件可查看原因。" if failures else ""))
+                                    ("选中失败文件可查看原因。" if failures else "") +
+                                    ("标为“成功（提示）”的文件有附加说明，可选中查看。" if warning_iids else ""))
                     if fatal_error:
                         self.status.set(f"转换中断：{fatal_error}")
                         self._set_details(fatal_error)
                     elif failures and not self.tree.selection():
                         failed_iid = next(iid for iid, item in self.items.items() if item["status"] == "失败")
                         self.tree.selection_set(failed_iid)
+                        self._show_selected_details()
+                    elif warning_iids and not self.tree.selection():
+                        self.tree.selection_set(warning_iids[0])
                         self._show_selected_details()
                     self._refresh_controls()
         except queue.Empty:
